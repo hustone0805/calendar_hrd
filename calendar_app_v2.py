@@ -57,6 +57,7 @@ elif page == "일정 달력 보기":
 
     # 시간순 정렬
     calendar_df = calendar_df.sort_values(by=["시작일시"])
+    calendar_df["시작일시_정제"] = calendar_df["시작일시"].dt.round("min")
 
     # 이벤트 생성
     events = []
@@ -81,23 +82,27 @@ elif page == "일정 달력 보기":
 
     if selected_event:
         st.subheader("📌 선택한 일정 상세 정보")
-        selected_title = selected_event.get("title")
-        selected_start = pd.to_datetime(selected_event.get("start"))
+        title_parts = selected_event.get("title", "").split(" - ")
+        if len(title_parts) == 2:
+            task_title, task_name = title_parts
+            selected_start = pd.to_datetime(selected_event.get("start")).round("min")
 
-        selected_row = calendar_df[
-            (calendar_df["업무제목"] + " - " + calendar_df["이름"] == selected_title) &
-            (calendar_df["시작일시"] == selected_start)
-        ]
+            selected_row = calendar_df[
+                (calendar_df["업무제목"] == task_title) &
+                (calendar_df["이름"] == task_name) &
+                (calendar_df["시작일시_정제"] == selected_start)
+            ]
 
-        if not selected_row.empty:
-            row = selected_row.iloc[0]
-            st.markdown(f"**제목**: {row['업무제목']}")
-            st.markdown(f"**이름**: {row['이름']}")
-            st.markdown(f"**시간**: {row['시작일시'].strftime('%Y-%m-%d %H:%M')} ~ {row['종료일시'].strftime('%H:%M')}")
-            st.markdown(f"**장소**: {row['장소']}")
-            st.markdown(f"**내용**:\n{row['내용']}")
+            if not selected_row.empty:
+                row = selected_row.iloc[0]
+                st.markdown(f"**제목**: {row['업무제목']}")
+                st.markdown(f"**이름**: {row['이름']}")
+                st.markdown(f"**시간**: {row['시작일시'].strftime('%Y-%m-%d %H:%M')} ~ {row['종료일시'].strftime('%H:%M')}")
+                st.markdown(f"**장소**: {row['장소']}")
+                st.markdown(f"**내용**:\n{row['내용']}")
 
-            if st.button("🗑️ 이 일정 삭제하기"):
-                calendar_df = calendar_df.drop(index=selected_row.index)
-                calendar_df.to_csv(CSV_PATH, index=False)
-                st.success("✅ 일정이 삭제되었습니다. 새로고침 후 확인해주세요.")
+                if st.button("🗑️ 이 일정 삭제하기"):
+                    calendar_df = calendar_df.drop(index=selected_row.index)
+                    calendar_df.drop(columns=["시작일시_정제"], inplace=True)
+                    calendar_df.to_csv(CSV_PATH, index=False)
+                    st.success("✅ 일정이 삭제되었습니다. 새로고침 후 확인해주세요.")
