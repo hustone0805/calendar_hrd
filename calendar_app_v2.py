@@ -58,14 +58,10 @@ elif page == "일정 달력 보기":
     # 시간순 정렬
     calendar_df = calendar_df.sort_values(by=["시작일시"])
 
-    # 일정 선택을 위한 ID 부여
-    calendar_df["id"] = calendar_df.index.astype(str)
-
     # 이벤트 생성
     events = []
     for _, row in calendar_df.iterrows():
         events.append({
-            "id": row["id"],
             "title": f"{row['업무제목']} - {row['이름']}",
             "start": row["시작일시"].isoformat(),
             "end": row["종료일시"].isoformat(),
@@ -83,11 +79,15 @@ elif page == "일정 달력 보기":
 
     selected_event = calendar(events=events, options=calendar_options)
 
-    # 상세 내용 및 삭제 기능
     if selected_event:
         st.subheader("📌 선택한 일정 상세 정보")
-        event_id = selected_event["id"]
-        selected_row = calendar_df[calendar_df["id"] == event_id]
+        selected_title = selected_event.get("title")
+        selected_start = pd.to_datetime(selected_event.get("start"))
+
+        selected_row = calendar_df[
+            (calendar_df["업무제목"] + " - " + calendar_df["이름"] == selected_title) &
+            (calendar_df["시작일시"] == selected_start)
+        ]
 
         if not selected_row.empty:
             row = selected_row.iloc[0]
@@ -98,7 +98,6 @@ elif page == "일정 달력 보기":
             st.markdown(f"**내용**:\n{row['내용']}")
 
             if st.button("🗑️ 이 일정 삭제하기"):
-                calendar_df = calendar_df[calendar_df["id"] != event_id]
-                calendar_df.drop(columns=["id"], inplace=True)
+                calendar_df = calendar_df.drop(index=selected_row.index)
                 calendar_df.to_csv(CSV_PATH, index=False)
                 st.success("✅ 일정이 삭제되었습니다. 새로고침 후 확인해주세요.")
