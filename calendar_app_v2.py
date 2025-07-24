@@ -6,16 +6,17 @@ from streamlit_calendar import calendar
 import os
 from streamlit_autorefresh import st_autorefresh
 
-CSV_PATH = "calendar_data.csv"
+# CSV 파일 경로 (raw string 사용)
+CSV_PATH = r"C:\Users\hsukkim\OneDrive - Smilegate\인재문화실\92. 교육운영지원\calendar_data.csv"
 
 # 자동 새로고침 (30초 간격)
 st_autorefresh(interval=30 * 1000, key="datarefresh")
 
-# CSV 파일 불러오기
-if os.path.exists(CSV_PATH): CSV_PATH = r"C:\Users\hsukkim\OneDrive - Smilegate\인재문화실\92. 교육운영지원\calendar_data.csv"
-calendar_df = pd.read_csv(CSV_PATH, parse_dates=["시작일시", "종료일시"])
+# CSV 파일 불러오기 (정상 작동 구조)
+if os.path.exists(CSV_PATH):
+    calendar_df = pd.read_csv(CSV_PATH, parse_dates=["시작일시", "종료일시"])
 else:
-calendar_df = pd.DataFrame(columns=["이름", "업무제목", "시작일시", "종료일시", "내용"])
+    calendar_df = pd.DataFrame(columns=["이름", "업무제목", "시작일시", "종료일시", "내용"])
 
 st.title("📅 팀 업무 달력")
 
