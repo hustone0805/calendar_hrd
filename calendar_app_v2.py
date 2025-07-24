@@ -12,7 +12,7 @@ CSV_PATH = "calendar_data.csv"
 st_autorefresh(interval=30 * 1000, key="datarefresh")
 
 # CSV 파일 불러오기
-if os.path.exists(CSV_PATH): "C:\Users\hsukkim\OneDrive - Smilegate\인재문화실\92. 교육운영지원\calendar_data.csv
+if os.path.exists(CSV_PATH): CSV_PATH = r"C:\Users\hsukkim\OneDrive - Smilegate\인재문화실\92. 교육운영지원\calendar_data.csv"
     calendar_df = pd.read_csv(CSV_PATH, parse_dates=["시작일시", "종료일시"])
 else:
     calendar_df = pd.DataFrame(columns=["이름", "업무제목", "시작일시", "종료일시", "내용"])
